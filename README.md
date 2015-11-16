@@ -2,9 +2,11 @@
 A small express app that wraps the feature service createReplica API
 
 ## Usage
-`NPM install`
-`node server.js`
-`curl localhost:3000/:opendata_id`
+```
+NPM install
+node server.js
+curl localhost:3000/:opendata_id
+````
 
 Will return 202 until the file is ready, then it will return the file geodatabase
 
