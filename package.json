@@ -1,0 +1,36 @@
+{
+  "name": "featureservice-replicator",
+  "version": "0.0.0",
+  "description": "Generate file geodatabase exports from feature services and map services",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@github.com/dmfenton/featureservice-replicator.git"
+  },
+  "keywords": [
+    "gis",
+    "geoservices",
+    "fgdb",
+    "download"
+  ],
+  "author": "Daniel Fenton <dfenton@esri.com>",
+  "license": "Apache-2.0",
+  "bugs": {
+    "url": "https://github.com/dmfenton/featureservice-replicator/issues"
+  },
+  "homepage": "https://github.com/dmfenton/featureservice-replicator#readme",
+  "devDependencies": {
+    "babel": "^6.1.18",
+    "babel-preset-es2015": "^6.1.18"
+  },
+  "dependencies": {
+    "cors": "^2.7.1",
+    "express": "^4.13.3",
+    "ioredis": "^1.10.0",
+    "request": "^2.65.0",
+    "request-promise": "^1.0.2"
+  }
+}
