@@ -10,3 +10,6 @@ Will return 202 until the file is ready, then it will return the file geodatabas
 
 Note: The Feature Service must have sync enabled
 
+## Architecture
+![image](https://raw.githubusercontent.com/dmfenton/featureservice-replicator/master/architecture.jpg)
+
