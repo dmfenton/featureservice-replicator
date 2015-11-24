@@ -6,6 +6,10 @@
 #
 #
 
+execute 'update apt repositories' do
+  command 'apt-get update'
+end
+
 package 'git'
 
 package 'redis-server'
@@ -17,8 +21,20 @@ end
 
 package 'nginx'
 
-template '/etc/nginx/nginx.conf' do
-  source 'nginx.conf.erb'
+file '/etc/nginx/sites-enabled/default' do
+  action :delete
+end
+
+file '/etc/nginx/sites-available/default' do
+  action :delete
+end
+
+template '/etc/nginx/sites-available/replicator' do
+  source 'replicator.erb'
+end
+
+link '/etc/nginx/sites-enabled/replicator' do
+  to '/etc/nginx/sites-available/replicator'
 end
 
 service 'nginx' do
