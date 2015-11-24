@@ -15,6 +15,17 @@ service 'redis-server' do
   action [:enable, :start]
 end
 
+package 'nginx'
+
+template '/etc/nginx/nginx.conf' do
+  source 'nginx.conf.erb'
+end
+
+service 'nginx' do
+  supports :status => true
+	action [:enable, :start]
+end
+
 execute 'add node package repo' do
   command 'curl -sL https://deb.nodesource.com/setup_4.x | sudo -E bash -'
 end
