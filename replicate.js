@@ -5,14 +5,15 @@ var request = require('request-promise');
 var Redis = require('ioredis');
 var redis = new Redis();
 
-module.exports = function (id, params) {
-  console.log(id, params);
+module.exports = function (params, query) {
+  console.log(params, query);
   return new Promise(function (resolve, reject) {
-    getDataset(id).then(getLayerInfo).then(function (info) {
-      console.log('here', info);
-      return getJobInfo({ layer: info.layer, updated: info.updated, id: createHash(id, params) });
+    console.log(params);
+    getDataset(params.id).then(function (service) {
+      return getLayerInfo(service, params.layer);
     }).then(function (info) {
-      console.log('inside this block');
+      return getJobInfo({ service: info.service, layer: params.layer, updated: info.updated, id: createHash(params, query) });
+    }).then(function (info) {
       if (info.status !== 'Ready') {
         return getJobStatus(info);
       } else {
@@ -21,8 +22,7 @@ module.exports = function (id, params) {
     }).then(function (resolution) {
       resolve(resolution);
     }).catch(function (options) {
-      console.log('here??', params, options);
-      return requestReplica(params, options);
+      return requestReplica(options, query);
     }).then(function (resolution) {
       resolve(resolution);
     }, function (rejection) {
@@ -33,20 +33,20 @@ module.exports = function (id, params) {
 
 function getDataset(id) {
   return new Promise(function (resolve, reject) {
-    request('http://opendataqa.arcgis.com/datasets/' + id + '.json').then(function (data) {
-      var dataset = JSON.parse(data);
-      resolve(dataset.data.url);
+    request('http://qaext.arcgis.com/sharing/rest/content/items/' + id + '?f=json').then(function (data) {
+      var item = JSON.parse(data);
+      resolve(item.url);
     });
   });
 }
 
-function getLayerInfo(layer) {
+function getLayerInfo(service, layer) {
   return new Promise(function (resolve, reject) {
-    request(layer + '?f=json').then(function (data) {
-      console.log(data);
+    request(service + '/' + layer + '?f=json').then(function (data) {
       var layerInfo = JSON.parse(data);
       var updated = layerInfo.editingInfo.lastEditDate;
-      resolve({ layer: layer, updated: updated });
+      console.log('get layer info', service);
+      resolve({ service: service, updated: updated });
     });
   });
 }
@@ -55,10 +55,10 @@ function getJobInfo(options) {
   return new Promise(function (resolve, reject) {
     redis.get(options.id).then(function (json) {
       var info = JSON.parse(json);
+      console.log(options);
       console.log(info);
       if (!info || info === null) return reject(options);
       if (options.updated > info.updated) return reject(options);
-      console.log('down here?');
       resolve(info);
     });
   });
@@ -81,7 +81,7 @@ function getJobStatus(info) {
         var code = 202;
         var body = {
           status: 'Processing',
-          processingTime: (response.submissionTime - Date.now()) / 1000
+          processingTime: (Date.now() - response.submissionTime) / 1000
         };
         resolve({ code: code, body: body });
       }
@@ -101,13 +101,14 @@ function getFile(info) {
   });
 }
 
-function requestReplica(params, options) {
+function requestReplica(params, query) {
   var replicaOptions = createOptions(params);
   return new Promise(function (resolve, reject) {
-    postRequest(parseService(options.layer), replicaOptions).then(function (data) {
+    console.log('req rep', params, query);
+    postRequest(params.service, replicaOptions).then(function (data) {
       var results = JSON.parse(data);
       console.log('new replica requested', results);
-      updateInfo(options.id, { status: 'Processing', url: results.statusUrl, id: options.id });
+      updateInfo(params.id, { status: 'Processing', url: results.statusUrl, id: params.id });
       resolve({ code: 202, body: { status: 'Processing', processingTime: 0 } });
     });
   });
@@ -125,16 +126,16 @@ function checkFileLink(url) {
   return request(headOptions);
 }
 
-function createHash(id, params) {
-  var sorted_params = {};
-  var sorted_keys = Object.keys(params).sort();
+function createHash(params, query) {
+  var sorted_query = {};
+  var sorted_keys = Object.keys(query).sort();
   if (sorted_keys.length) {
     Object.keys(params).sort().each(function (k) {
-      sorted_params[k] = params[k];
+      sorted_query[k] = query[k];
     });
   }
-  var paramString = JSON.stringify({ id: id, sorted_params: sorted_params });
-  return crypto.createHash('md5').update(paramString).digest('hex');
+  var queryString = JSON.stringify({ params: params, sorted_query: sorted_query });
+  return crypto.createHash('md5').update(queryString).digest('hex');
 }
 
 function updateInfo(id, info) {
