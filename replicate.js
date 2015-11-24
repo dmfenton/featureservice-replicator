@@ -130,8 +130,10 @@ function createHash(params, query) {
   var sorted_query = {};
   var sorted_keys = Object.keys(query).sort();
   if (sorted_keys.length) {
-    Object.keys(params).sort().each(function (k) {
-      sorted_query[k] = query[k];
+    Object.keys(params).sort().forEach(function (k) {
+      if (k !== 'session') {
+        sorted_query[k] = query[k];
+      }
     });
   }
   var queryString = JSON.stringify({ params: params, sorted_query: sorted_query });

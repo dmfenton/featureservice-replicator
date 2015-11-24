@@ -23,17 +23,16 @@ if (cluster.isMaster) {
   });
 } else {
   var app = express();
-
   app.use(cors());
-
   app.get('/', function (req, res) {
-    res.status(200).send('Replicator up and running')
-  })
-
+    res.status(200).send('Replicator up and running');
+  });
   app.get('/:id/:layer', function (req, res) {
     replicate(req.params, req.query || {}).then(function (results) {
       console.log('resolved successfully', results);
       if (results.code === 202) return res.status(202).json(results.body);
+      res.setHeader('Content-disposition', 'attachment; filename=' + req.params.id + '_' + req.params.layer + '.fgdb.zip');
+      res.contentType('application/octet-stream');
       request.get(results.url).pipe(res);
     }).catch(function (err) {
       console.log('errored', err);

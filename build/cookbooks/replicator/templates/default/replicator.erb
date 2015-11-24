@@ -1,0 +1,10 @@
+upstream replicator {
+  server 127.0.0.1:3000;
+}
+
+server {
+	  listen 80;
+		location / {
+		  proxy_pass http://replicator;
+		}
+}

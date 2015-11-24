@@ -135,8 +135,10 @@ function createHash (params, query) {
   const sorted_query = {}
   const sorted_keys = Object.keys(query).sort()
   if (sorted_keys.length) {
-    Object.keys(params).sort().each(function (k) {
-      sorted_query[k] = query[k]
+    Object.keys(params).sort().forEach(function (k) {
+      if (k !== 'session') {
+        sorted_query[k] = query[k]
+      }
     })
   }
   var queryString = JSON.stringify({params, sorted_query})
