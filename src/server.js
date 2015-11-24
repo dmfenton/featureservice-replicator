@@ -23,6 +23,9 @@ if (cluster.isMaster) {
 } else {
   const app = express()
   app.use(cors())
+  app.get('/', function (req, res) {
+    res.status(200).send('Replicator up and running')
+  })
   app.get('/:id/:layer', function (req, res) {
     replicate(req.params, req.query || {})
       .then(function (results) {
