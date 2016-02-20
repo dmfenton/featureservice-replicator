@@ -33,7 +33,7 @@ module.exports = function (params, query) {
 
 function getDataset(id) {
   return new Promise(function (resolve, reject) {
-    request('http://qaext.arcgis.com/sharing/rest/content/items/' + id + '?f=json').then(function (data) {
+    request('https://www.arcgis.com/sharing/rest/content/items/' + id + '?f=json').then(function (data) {
       var item = JSON.parse(data);
       resolve(item.url);
     });
